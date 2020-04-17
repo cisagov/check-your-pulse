@@ -310,8 +310,8 @@ def _summary(
 
         conn_list = [
             (
-                conn.date_time,
-                conn.UID,
+                conn._date_time,
+                conn._UID,
                 f"Log: {conn.type}\tInfo: {Color._green(conn.user)} was connected from {Color._green(conn.begin_time)}"
                 f"to {Color._green(conn.end_time)} from {Color._green(conn.ip)}",
             )

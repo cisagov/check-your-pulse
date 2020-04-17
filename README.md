@@ -51,7 +51,6 @@ cd check-your-pulse
 
 ```HTML
 Download the logs from web console
-Download your logs
 ```
 
 Instructions can be found
