@@ -333,7 +333,9 @@ def _summary(
                 ]
             )
 
-        conn_list = sorted(conn_list, key=lambda x: x[0])
+        conn_list = sorted(
+            conn_list, key=lambda x: x[0] if x else datetime.datetime.now()
+        )
 
         for item in conn_list[0:numevents]:
             summary_output += "\n" + item[2]
