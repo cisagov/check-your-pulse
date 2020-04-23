@@ -115,7 +115,7 @@ def format_line(line: str):
             " - ".join(s[4:]),
         )
 
-        if not date_time:
+        if not isinstance(date_time, datetime.datetime):
             date_time, ip, user, summary = (
                 s[0],
                 s[2].split(" ")[0].strip("[]"),
@@ -146,6 +146,7 @@ def process_lines(line: str, type: str) -> None:
     try:
         formatted_line = format_line(line)
         formatted_line.type = type
+        print(formatted_line.ip)
 
         if formatted_line._UID in connections:
             connections[formatted_line._UID].events.append(
@@ -157,7 +158,7 @@ def process_lines(line: str, type: str) -> None:
                 (formatted_line._date_time, formatted_line.summary)
             )
 
-        if formatted_line.ip in maliciousIPs:
+        if any(item in formatted_line.ip for item in maliciousIPs):
             connections[formatted_line._UID].of_interest = True
             connections[formatted_line._UID].reason.add(
                 "Found malicious IP: %s" % formatted_line.ip

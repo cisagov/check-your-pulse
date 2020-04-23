@@ -26,6 +26,9 @@ The tool works by looking for IOCs (strings, Internet Protocol [IP] addresses,
 and user agents) associated with Threat Actors exploiting this vulnerability in
  the wild.
 
+> NOTE: check-your-pulse will alert on *ANY* IOCs it finds in the log files. If
+>an IOC occurred after patch, it may be a false positive.
+
 ## Requirements ##
 
 Python versions 3.6 and above.  Note that Python 2 is **not** supported.
