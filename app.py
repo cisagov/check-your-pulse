@@ -150,7 +150,6 @@ def process_lines(line: str, type: str) -> None:
     try:
         formatted_line = format_line(line)
         formatted_line.type = type
-        print(formatted_line.ip)
 
         if formatted_line._UID in connections:
             connections[formatted_line._UID].events.append(
