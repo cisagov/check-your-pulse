@@ -6,6 +6,7 @@ import csv
 import datetime
 import glob
 from hashlib import sha3_256 as sha
+from itertools import chain
 import json
 import os
 import re
@@ -115,7 +116,10 @@ def format_line(line: str):
             " - ".join(s[4:]),
         )
 
-        if not isinstance(date_time, datetime.datetime):
+        connection = Connection(date_time, ip, user, summary)
+
+        if not isinstance(connection._date_time, datetime.datetime):
+
             date_time, ip, user, summary = (
                 s[0],
                 s[2].split(" ")[0].strip("[]"),
@@ -123,7 +127,7 @@ def format_line(line: str):
                 " - ".join(s[3:]),
             )
 
-        connection = Connection(date_time, ip, user, summary)
+            connection = Connection(date_time, ip, user, summary)
 
         return connection
 
@@ -252,17 +256,19 @@ def main(animation: Animation) -> dict:
     global connections
     connections = dict()
 
-    animation.start(f"Parsing {file_event}")
-    for line in log_contents_event:
-        process_lines(line, "event")
-    animation.done()
+    if log_contents_event:
+        animation.start(f"Parsing {file_event}")
+        for line in log_contents_event:
+            process_lines(line, "event")
+        animation.done()
 
-    maliciousIPs.extend([x.ip for x in connections.values() if x.of_interest])
+        maliciousIPs.extend([x.ip for x in connections.values() if x.of_interest])
 
-    animation.start(f"Parsing {file_access}")
-    for line in log_contents_access:
-        process_lines(line, "access")
-    animation.done()
+    if log_contents_access:
+        animation.start(f"Parsing {file_access}")
+        for line in log_contents_access:
+            process_lines(line, "access")
+        animation.done()
 
     return connections
 
@@ -359,25 +365,40 @@ if __name__ == "__main__":
         file_event = glob.glob(os.path.join(args.path, "") + "*.events")
         file_access = glob.glob(os.path.join(args.path, "") + "*.access")
 
-        try:
-            log_contents_event = open(
-                file_event[0], "r", encoding="utf-8", errors="ignore"
-            ).readlines()
-        except IndexError:
+        if not file_event and not file_access:
             raise ChYP_Exception(
-                f"Could not find .event file at {args.path}, please specify the correct directory "
-                f"with -p or copy your files to the local directory"
+                f"Could not find .event file or .access file at {args.path},"
+                f"please specify the correct directory with -p or copy your"
+                f"files to the local directory (./)"
             )
 
-        try:
-            log_contents_access = open(
-                file_access[0], "r", encoding="utf-8", errors="ignore"
-            ).readlines()
-        except IndexError:
-            raise ChYP_Exception(
-                f"Could not find .access file at {args.path}, please specify the correct directory "
-                f"with -p or copy your files to the local directory"
-            )
+        if file_event:
+            if len(file_access) == 1:
+                log_contents_event = open(
+                    file_event[0], "r", encoding="utf-8", errors="ignore"
+                ).readlines()
+            else:
+                log_contents_event = chain.from_iterable(  # type: ignore
+                    [
+                        open(x, "r", encoding="utf-8", errors="ignore").readlines()
+                        for x in file_event
+                    ]
+                )
+                file_event = str([x.split("/")[-1] for x in file_event]).strip("[]")  # type: ignore
+
+        if file_access:
+            if len(file_access) == 1:
+                log_contents_access = open(
+                    file_access[0], "r", encoding="utf-8", errors="ignore"
+                ).readlines()
+            else:
+                log_contents_access = chain.from_iterable(  # type: ignore
+                    [
+                        open(x, "r", encoding="utf-8", errors="ignore").readlines()
+                        for x in file_access
+                    ]
+                )
+                file_access = str([x.split("/")[-1] for x in file_access]).strip("[]''")  # type: ignore
 
     connections = main(animation)
     _summary(

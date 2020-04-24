@@ -160,6 +160,10 @@ class Animation(Color):
 
     def _text_format(self, text):
         if text:
+            term_size = shutil.get_terminal_size(fallback=(80, 24)).columns
+            if len(text) > term_size:
+                text = text[0 : (term_size - 15)]
+                text += " ..."
             self.text = f" {text}"
 
     @staticmethod
