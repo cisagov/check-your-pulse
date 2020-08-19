@@ -188,8 +188,7 @@ def _clear_console():
 def _center(line):
     term_size = shutil.get_terminal_size(fallback=(80, 24)).columns
     line_len = len(line)
-    pad_size = int((term_size - line_len) / 2)
-    return pad_size
+    return int((term_size - line_len) / 2)
 
 
 ascii_art = """

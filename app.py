@@ -119,7 +119,6 @@ def format_line(line: str):
         connection = Connection(date_time, ip, user, summary)
 
         if not isinstance(connection._date_time, datetime.datetime):
-
             date_time, ip, user, summary = (
                 s[0],
                 s[2].split(" ")[0].strip("[]"),
@@ -151,15 +150,12 @@ def process_lines(line: str, type: str) -> None:
         formatted_line = format_line(line)
         formatted_line.type = type
 
-        if formatted_line._UID in connections:
-            connections[formatted_line._UID].events.append(
-                (formatted_line._date_time, formatted_line.summary)
-            )
-        else:
+        if formatted_line._UID not in connections:
             connections[formatted_line._UID] = formatted_line
-            connections[formatted_line._UID].events.append(
-                (formatted_line._date_time, formatted_line.summary)
-            )
+            
+        connections[formatted_line._UID].events.append(
+            (formatted_line._date_time, formatted_line.summary)
+        )
 
         if any(item in formatted_line.ip for item in maliciousIPs):
             connections[formatted_line._UID].of_interest = True
@@ -253,7 +249,7 @@ def main(animation: Animation) -> dict:
     :return: connections dictionary.
     """
     global connections
-    connections = dict()
+    connections = {}
 
     if log_contents_event:
         animation.start(f"Parsing {file_event}")
@@ -340,7 +336,10 @@ def _summary(
             )
 
         conn_list = sorted(
-            conn_list, key=lambda x: x[0] if x else datetime.datetime.now()
+            conn_list,
+            key=lambda x: x[0]
+            if isinstance(x, datetime.datetime)
+            else datetime.datetime.now(),
         )
 
         for item in conn_list[0:numevents]:
